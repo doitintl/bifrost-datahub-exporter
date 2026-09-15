@@ -19,6 +19,7 @@ STUB_PID=$!
 sleep 1
 
 mkdir -p "$WORK/data"
+chmod 777 "$WORK/data"
 cat > "$WORK/data/config.json" <<'EOF'
 {
   "$schema": "https://www.getbifrost.ai/schema",
@@ -54,10 +55,16 @@ docker run -d --name bifrost-itest -p 18743:8080 \
   --add-host=host.docker.internal:host-gateway \
   -v "$WORK/data:/app/data" "maximhq/bifrost:$TAG" >/dev/null
 
+READY=0
 for _ in $(seq 1 60); do
-  curl -sf -o /dev/null http://localhost:18743/api/logs && break
+  if curl -sf -o /dev/null http://localhost:18743/api/logs; then READY=1; break; fi
   sleep 3
 done
+if [ "$READY" != 1 ]; then
+  echo "FAIL: gateway never became ready; container logs follow" >&2
+  docker logs bifrost-itest >&2 || true
+  exit 1
+fi
 
 for i in 1 2 3; do
   curl -sf -o /dev/null -X POST http://localhost:18743/v1/chat/completions \
