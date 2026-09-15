@@ -1,0 +1,60 @@
+# Required: your Bifrost gateway URL (usually the in-cluster Service).
+bifrostBaseUrl: "http://bifrost:8080"
+
+# Required: DoiT API token with the DataHubAdmin scope. Either set it here
+# (written into a chart-managed Secret) or leave it empty and point
+# existingSecret at a Secret you manage with the key DOIT_API_KEY (and
+# optionally BIFROST_ADMIN_USERNAME / BIFROST_ADMIN_PASSWORD).
+doitApiKey: ""
+
+# Only needed when the gateway has governance admin auth enabled
+# (governance.auth_config.is_enabled) — OSS Bifrost serves /api/logs
+# without auth by default.
+bifrostAdminUsername: ""
+bifrostAdminPassword: ""
+existingSecret: ""
+
+# Everything under config lands in the container environment verbatim.
+# See the README configuration table for the full list and defaults.
+config:
+  DOIT_API_URL: "https://api.doit.com"
+  DATASET: "Bifrost"
+  MODE: "per_call"
+  FEATURE_SOURCE: "app"
+  POLL_INTERVAL: "5m"
+  LOOKBACK_HOURS: "48"
+  BACKFILL_DAYS: "0"
+
+image:
+  repository: ghcr.io/doitintl/bifrost-datahub-exporter
+  tag: ""          # defaults to the chart appVersion
+  pullPolicy: IfNotPresent
+
+# Checkpoint persistence. Losing it is safe (re-export is idempotent), so
+# persistence is optional; emptyDir is used when disabled.
+persistence:
+  enabled: true
+  size: 100Mi
+  storageClassName: ""
+
+metrics:
+  enabled: true
+  port: 9464
+
+# Restrict egress to the Bifrost gateway namespace + HTTPS (DoiT API + DNS).
+# Adjust bifrostSelector to match your gateway pods before enabling.
+networkPolicy:
+  enabled: false
+  bifrostSelector: {}
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+podAnnotations: {}

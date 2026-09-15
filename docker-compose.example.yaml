@@ -1,0 +1,16 @@
+services:
+  bifrost-datahub-exporter:
+    image: ghcr.io/doitintl/bifrost-datahub-exporter:latest
+    restart: unless-stopped
+    environment:
+      BIFROST_BASE_URL: http://bifrost:8080
+      DOIT_API_KEY: ${DOIT_API_KEY}
+      # Only when governance admin auth is enabled on the gateway:
+      # BIFROST_ADMIN_USERNAME: ${BIFROST_ADMIN_USERNAME}
+      # BIFROST_ADMIN_PASSWORD: ${BIFROST_ADMIN_PASSWORD}
+    volumes:
+      - exporter-state:/state
+    ports:
+      - "9464:9464"
+volumes:
+  exporter-state:

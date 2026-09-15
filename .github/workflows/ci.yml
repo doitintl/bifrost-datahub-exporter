@@ -1,0 +1,32 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      - run: go test ./...
+      - run: CGO_ENABLED=0 go build -trimpath ./cmd/exporter
+  bifrost-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Version floor is transports v2.0.0 (spec D4); latest tracks the
+        # current release so gateway contract drift fails here first.
+        bifrost: ["v2.0.0", "v2.1.0", "v2.1.1", "latest"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: integration test against Bifrost ${{ matrix.bifrost }}
+        run: ./scripts/integration-test.sh ${{ matrix.bifrost }}

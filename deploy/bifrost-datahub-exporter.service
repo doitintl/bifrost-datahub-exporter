@@ -1,0 +1,25 @@
+# systemd unit for running the exporter from a release binary on the host
+# that runs Bifrost (or any host that can reach it).
+#   1. install the binary:   /usr/local/bin/bifrost-datahub-exporter
+#   2. put credentials in:   /etc/bifrost-datahub-exporter/env   (mode 0600)
+#   3. systemctl enable --now bifrost-datahub-exporter
+[Unit]
+Description=DoiT Bifrost DataHub exporter
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/bifrost-datahub-exporter
+EnvironmentFile=/etc/bifrost-datahub-exporter/env
+Environment=STATE_FILE=/var/lib/bifrost-datahub-exporter/state.json
+StateDirectory=bifrost-datahub-exporter
+DynamicUser=yes
+Restart=on-failure
+RestartSec=10
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,7 @@
+apiVersion: v2
+name: bifrost-datahub-exporter
+description: Export estimated LLM spend and attribution from a self-hosted Bifrost gateway into DoiT Cloud Intelligence via the DataHub API
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+home: https://github.com/doitintl/bifrost-datahub-exporter

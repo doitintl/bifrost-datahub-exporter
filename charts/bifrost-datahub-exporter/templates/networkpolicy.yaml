@@ -1,0 +1,25 @@
+{{- if .Values.networkPolicy.enabled }}
+# Egress allowlist: DNS, the Bifrost gateway pods, and HTTPS out (api.doit.com).
+# Most CNIs cannot restrict egress to a DNS name, so 443 is allowed broadly;
+# tighten to your egress gateway's CIDR if you have one.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "exporter.name" . }}
+  labels: {{- include "exporter.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: {{- include "exporter.selectorLabels" . | nindent 6 }}
+  policyTypes: ["Egress"]
+  egress:
+    - to:
+        - podSelector: {{- toYaml .Values.networkPolicy.bifrostSelector | nindent 12 }}
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - ports:
+        - port: 443
+          protocol: TCP
+{{- end }}
